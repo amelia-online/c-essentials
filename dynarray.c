@@ -1,5 +1,6 @@
 #include "dynarray.h"
 #include <stdlib.h>
+#include <stdbool.h>
 
 BitVec BitVecMake()
 {
@@ -53,7 +54,7 @@ bool *BitVecPop(BitVec *v)
   int byte = v->top / 8;
   int idx = v->top % 8;
 
-  *res = v->array[byte] & (128 >> idx);
+  *res = (bool) (v->array[byte] >> (8-idx)) & 1;
 
   v->size--;
   v->top--;
@@ -71,7 +72,7 @@ bool *BitVecPeek(const BitVec *v)
   int byte = v->top / 8;
   int idx = v->top % 8;
 
-  *res = v->array[byte] & (128 >> idx);
+  *res = (bool) (v->array[byte] >> (8-idx)) & 1;
   
   return res;
 }
@@ -85,7 +86,29 @@ bool *BitVecGet(const BitVec *v, int idx)
   int byte = idx / 8;
   int bitIdx = idx % 8;
 
-  *res = v->array[byte] & (128 >> bitIdx);
+  *res = (bool) (v->array[byte] >> (8-bitIdx)) & 1;
   
   return res;
+}
+
+void BitVecRemove(BitVec *v, int idx)
+{
+  if (idx < 0 || idx > v->size)
+    return;
+
+  for (int i = idx; i < v->top-1; i++)
+    {
+      int backByte = i / 8;
+      int backBitIdx = i % 8;
+
+      int frontByte = (i+1)/8;
+      int frontBitIdx = (i+1)%8;
+
+      char frontBit = (char)(v->array[frontByte] >> (8-frontBitIdx)) & 1;
+      v->array[backByte] = v->array[backByte] | (frontBit << backByteIdx);
+      
+      
+
+    }
+
 }
